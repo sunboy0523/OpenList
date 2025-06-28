@@ -296,7 +296,7 @@ func FsGet(c *gin.Context) {
 					sign.Sign(reqPath))
 			} else {
 				rawURL = fmt.Sprintf("%s/p%s%s",
-					common.GetApiUrl(c.Request),
+					common.GetApiUrl(c),
 					utils.EncodePath(reqPath, true),
 					query)
 			}

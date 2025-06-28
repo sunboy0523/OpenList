@@ -114,7 +114,7 @@ func (d *Alias) link(ctx context.Context, dst, sub string, args model.LinkArgs) 
 	if common.ShouldProxy(storage, stdpath.Base(sub)) {
 		link := &model.Link{
 			URL: fmt.Sprintf("%s/p%s?sign=%s",
-				common.GetApiUrl(args.HttpReq),
+				common.GetApiUrl(ctx),
 				utils.EncodePath(reqPath, true),
 				sign.Sign(reqPath)),
 		}
@@ -213,7 +213,7 @@ func (d *Alias) extract(ctx context.Context, dst, sub string, args model.Archive
 		if common.ShouldProxy(storage, stdpath.Base(sub)) {
 			link := &model.Link{
 				URL: fmt.Sprintf("%s/ap%s?inner=%s&pass=%s&sign=%s",
-					common.GetApiUrl(args.HttpReq),
+					common.GetApiUrl(ctx),
 					utils.EncodePath(reqPath, true),
 					utils.EncodePath(args.InnerPath, true),
 					url.QueryEscape(args.Password),

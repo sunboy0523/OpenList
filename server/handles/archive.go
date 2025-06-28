@@ -132,7 +132,7 @@ func FsArchiveMeta(c *gin.Context) {
 		IsEncrypted: ret.IsEncrypted(),
 		Content:     toContentResp(ret.GetTree()),
 		Sort:        ret.Sort,
-		RawURL:      fmt.Sprintf("%s%s%s", common.GetApiUrl(c.Request), api, utils.EncodePath(reqPath, true)),
+		RawURL:      fmt.Sprintf("%s%s%s", common.GetApiUrl(c), api, utils.EncodePath(reqPath, true)),
 		Sign:        s,
 	})
 }
