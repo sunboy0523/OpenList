@@ -118,9 +118,6 @@ func (d *Alias) link(ctx context.Context, dst, sub string, args model.LinkArgs) 
 				utils.EncodePath(reqPath, true),
 				sign.Sign(reqPath)),
 		}
-		if args.HttpReq != nil && d.ProxyRange {
-			link.RangeReadCloser = common.NoProxyRange
-		}
 		return link, nil
 	}
 	link, _, err := op.Link(ctx, storage, reqActualPath, args)
@@ -218,9 +215,6 @@ func (d *Alias) extract(ctx context.Context, dst, sub string, args model.Archive
 					utils.EncodePath(args.InnerPath, true),
 					url.QueryEscape(args.Password),
 					sign.SignArchive(reqPath)),
-			}
-			if args.HttpReq != nil && d.ProxyRange {
-				link.RangeReadCloser = common.NoProxyRange
 			}
 			return link, nil
 		}

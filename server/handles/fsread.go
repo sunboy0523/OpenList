@@ -309,7 +309,6 @@ func FsGet(c *gin.Context) {
 				link, _, err := fs.Link(c, reqPath, model.LinkArgs{
 					IP:       c.ClientIP(),
 					Header:   c.Request.Header,
-					HttpReq:  c.Request,
 					Redirect: true,
 				})
 				if err != nil {
