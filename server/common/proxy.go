@@ -41,7 +41,7 @@ func Proxy(w http.ResponseWriter, r *http.Request, link *model.Link, file model.
 			RangeReadCloserIF: link.RangeReadCloser,
 			Limiter:           stream.ServerDownloadLimit,
 		})
-	} else if link.Concurrency != 0 || link.PartSize != 0 {
+	} else if link.Concurrency > 0 || link.PartSize > 0 {
 		attachHeader(w, file)
 		size := file.GetSize()
 		rangeReader := func(ctx context.Context, httpRange http_range.Range) (io.ReadCloser, error) {
