@@ -178,7 +178,10 @@ func NewSeekableStream(fs FileStream, link *model.Link) (*SeekableStream, error)
 		if ss.Link.MFile != nil {
 			mFile := ss.Link.MFile
 			ss.Closers.TryAdd(mFile)
-			if file, ok := mFile.(*os.File); !ok {
+			switch file := mFile.(type) {
+			case *os.File:
+			case *bytes.Reader:
+			case model.File:
 				mFile = &RateLimitFile{
 					File:    file,
 					Limiter: ServerDownloadLimit,
