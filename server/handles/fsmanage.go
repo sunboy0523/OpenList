@@ -379,13 +379,13 @@ func Link(c *gin.Context) {
 	if storage.Config().OnlyLocal {
 		common.SuccessResp(c, model.Link{
 			URL: fmt.Sprintf("%s/p%s?d&sign=%s",
-				common.GetApiUrl(c.Request),
+				common.GetApiUrl(c),
 				utils.EncodePath(rawPath, true),
 				sign.Sign(rawPath)),
 		})
 		return
 	}
-	link, _, err := fs.Link(c, rawPath, model.LinkArgs{IP: c.ClientIP(), Header: c.Request.Header, HttpReq: c.Request})
+	link, _, err := fs.Link(c, rawPath, model.LinkArgs{IP: c.ClientIP(), Header: c.Request.Header})
 	if err != nil {
 		common.ErrorResp(c, err, 500)
 		return

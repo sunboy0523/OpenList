@@ -16,7 +16,6 @@ import (
 	"github.com/OpenListTeam/OpenList/internal/stream"
 	"github.com/OpenListTeam/OpenList/pkg/http_range"
 	"github.com/OpenListTeam/OpenList/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func Proxy(w http.ResponseWriter, r *http.Request, link *model.Link, file model.Obj) error {
@@ -48,7 +47,7 @@ func Proxy(w http.ResponseWriter, r *http.Request, link *model.Link, file model.
 			RangeReadCloserIF: link.RangeReadCloser,
 			Limiter:           stream.ServerDownloadLimit,
 		})
-	} else if link.Concurrency != 0 || link.PartSize != 0 {
+	} else if link.Concurrency > 0 || link.PartSize > 0 {
 		attachHeader(w, file)
 		size := file.GetSize()
 		rangeReader := func(ctx context.Context, httpRange http_range.Range) (io.ReadCloser, error) {
@@ -116,21 +115,16 @@ func GetEtag(file model.Obj) string {
 	return fmt.Sprintf(`"%x-%x"`, file.ModTime().Unix(), file.GetSize())
 }
 
-var NoProxyRange = &model.RangeReadCloser{}
-
-func ProxyRange(link *model.Link, size int64) {
+func ProxyRange(ctx context.Context, link *model.Link, size int64) {
 	if link.MFile != nil {
 		return
 	}
-	if link.RangeReadCloser == nil {
+	if link.RangeReadCloser == nil && !strings.HasPrefix(link.URL, GetApiUrl(ctx)+"/") {
 		var rrc, err = stream.GetRangeReadCloserFromLink(size, link)
 		if err != nil {
-			log.Warnf("ProxyRange error: %s", err)
 			return
 		}
 		link.RangeReadCloser = rrc
-	} else if link.RangeReadCloser == NoProxyRange {
-		link.RangeReadCloser = nil
 	}
 }
 
