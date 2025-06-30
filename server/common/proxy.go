@@ -20,7 +20,9 @@ import (
 
 func Proxy(w http.ResponseWriter, r *http.Request, link *model.Link, file model.Obj) error {
 	if link.MFile != nil {
-		defer link.MFile.Close()
+		if clr, ok := link.MFile.(io.Closer); ok {
+			defer clr.Close()
+		}
 		attachHeader(w, file)
 		contentType := link.Header.Get("Content-Type")
 		if contentType != "" {

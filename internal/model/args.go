@@ -31,7 +31,6 @@ type Link struct {
 	MFile           File              `json:"-"`      // best for local,smb... file system, which exposes MFile
 
 	Expiration *time.Duration // local cache expire Duration
-	IPCacheKey bool           `json:"-"` // add ip to cache key
 
 	//for accelerating request, use multi-thread downloading
 	Concurrency int `json:"concurrency"`
