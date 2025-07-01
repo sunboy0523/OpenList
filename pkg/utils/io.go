@@ -156,10 +156,16 @@ type ClosersIF interface {
 	io.Closer
 	Add(closer io.Closer)
 	TryAdd(reader io.Reader)
+	AddClosers(closers Closers)
+	GetClosers() Closers
 }
 
 type Closers struct {
 	closers []io.Closer
+}
+
+func (c *Closers) GetClosers() Closers {
+	return *c
 }
 
 var _ ClosersIF = (*Closers)(nil)
@@ -177,6 +183,9 @@ func (c *Closers) Add(closer io.Closer) {
 	if closer != nil {
 		c.closers = append(c.closers, closer)
 	}
+}
+func (c *Closers) AddClosers(closers Closers) {
+	c.closers = append(c.closers, closers.closers...)
 }
 func (c *Closers) TryAdd(reader io.Reader) {
 	if closer, ok := reader.(io.Closer); ok {

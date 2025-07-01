@@ -256,7 +256,9 @@ func (d *Crypt) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (
 	}
 	resultRangeReadCloser := &model.RangeReadCloser{}
 	resultRangeReadCloser.TryAdd(remoteLink.MFile)
-	resultRangeReadCloser.Add(remoteLink.RangeReadCloser)
+	if remoteLink.RangeReadCloser != nil {
+		resultRangeReadCloser.AddClosers(remoteLink.RangeReadCloser.GetClosers())
+	}
 	remoteFileSize := remoteFile.GetSize()
 	rangeReaderFunc := func(ctx context.Context, underlyingOffset, underlyingLength int64) (io.ReadCloser, error) {
 		length := underlyingLength
@@ -278,7 +280,7 @@ func (d *Crypt) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (
 			if err != nil {
 				return nil, err
 			}
-			resultRangeReadCloser.Add(rrc)
+			resultRangeReadCloser.AddClosers(rrc.GetClosers())
 			remoteLink.RangeReadCloser = rrc
 		}
 		if rrc != nil {
@@ -286,7 +288,7 @@ func (d *Crypt) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (
 			if err != nil {
 				return nil, err
 			}
-			return io.NopCloser(remoteReader), nil
+			return remoteReader, nil
 		}
 		return nil, errs.NotSupport
 
