@@ -133,7 +133,7 @@ func (d *Strm) link(ctx context.Context, dst, sub string) (*model.Link, error) {
 		return nil, err
 	}
 	return &model.Link{
-		MFile: model.NewNopMFile(strings.NewReader(d.getLink(ctx, reqPath))),
+		MFile: strings.NewReader(d.getLink(ctx, reqPath)),
 	}, nil
 }
 
