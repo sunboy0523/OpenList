@@ -1,12 +1,10 @@
 package common
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"maps"
@@ -28,18 +26,7 @@ func Proxy(w http.ResponseWriter, r *http.Request, link *model.Link, file model.
 		if contentType != "" {
 			w.Header().Set("Content-Type", contentType)
 		}
-		mFile := link.MFile
-		switch file := mFile.(type) {
-		case *os.File:
-		case *bytes.Reader:
-		case model.File:
-			mFile = &stream.RateLimitFile{
-				File:    file,
-				Limiter: stream.ServerDownloadLimit,
-				Ctx:     r.Context(),
-			}
-		}
-		http.ServeContent(w, r, file.GetName(), file.ModTime(), mFile)
+		http.ServeContent(w, r, file.GetName(), file.ModTime(), link.MFile)
 		return nil
 	} else if link.RangeReadCloser != nil {
 		attachHeader(w, file)

@@ -160,7 +160,6 @@ var _ model.FileStreamer = (*FileStream)(nil)
 // the SeekableStream object and be closed together when the SeekableStream object is closed.
 type SeekableStream struct {
 	FileStream
-	Link *model.Link
 	// should have one of belows to support rangeRead
 	rangeReadCloser model.RangeReadCloserIF
 }
@@ -169,37 +168,26 @@ func NewSeekableStream(fs FileStream, link *model.Link) (*SeekableStream, error)
 	if len(fs.Mimetype) == 0 {
 		fs.Mimetype = utils.GetMimeType(fs.Obj.GetName())
 	}
-	ss := &SeekableStream{FileStream: fs, Link: link}
+	ss := &SeekableStream{FileStream: fs}
 	if ss.Reader != nil {
 		ss.TryAdd(ss.Reader)
 		return ss, nil
 	}
-	if ss.Link != nil {
-		if ss.Link.MFile != nil {
-			mFile := ss.Link.MFile
-			ss.Closers.TryAdd(mFile)
-			switch file := mFile.(type) {
-			case *os.File:
-			case *bytes.Reader:
-			case model.File:
-				mFile = &RateLimitFile{
-					File:    file,
-					Limiter: ServerDownloadLimit,
-					Ctx:     fs.Ctx,
-				}
-			}
-			ss.Reader = mFile
+	if link != nil {
+		if link.MFile != nil {
+			ss.Closers.TryAdd(link.MFile)
+			ss.Reader = link.MFile
 			return ss, nil
 		}
-		if ss.Link.RangeReadCloser != nil {
+		if link.RangeReadCloser != nil {
 			ss.rangeReadCloser = &RateLimitRangeReadCloser{
-				RangeReadCloserIF: ss.Link.RangeReadCloser,
+				RangeReadCloserIF: link.RangeReadCloser,
 				Limiter:           ServerDownloadLimit,
 			}
 			ss.Add(ss.rangeReadCloser)
 			return ss, nil
 		}
-		if len(ss.Link.URL) > 0 {
+		if len(link.URL) > 0 {
 			rrc, err := GetRangeReadCloserFromLink(ss.GetSize(), link)
 			if err != nil {
 				return nil, err
@@ -376,7 +364,7 @@ func (r *headCache) Close() error {
 }
 
 func (r *RangeReadReadAtSeeker) InitHeadCache() {
-	if r.ss.Link.MFile == nil && r.masterOff == 0 {
+	if r.ss.GetFile() == nil && r.masterOff == 0 {
 		reader := r.readers[0]
 		r.readers = r.readers[1:]
 		r.headCache = &headCache{readerCur: reader}
