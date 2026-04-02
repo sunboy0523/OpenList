@@ -64,39 +64,30 @@ jobs:
           - target: "!(*musl*|*mips64le*|*windows-arm64*|*windows7-*|*android*|*freebsd*)" # xgo and loongarch (exclude mips64le)
             hash: "md5"
             flags: ""
-            compat: false
           - target: "linux-mips64le" # mips64le-compat-family
             hash: "md5-mips64le-glibc"
             flags: "-tags=sqlite_cgo_compat -ldflags="
-            compat: true
           - target: "linux-(mips|mips64|mipsle|loong64)-musl*" # musl-compat-family
             hash: "md5-linux-musl-mips"
             flags: "-tags=sqlite_cgo_compat -ldflags="
-            compat: true
           - target: "linux-!(arm*|mips|mips64|mipsle|loong64)-musl*" # musl-not-arm (exclude compat-family)
             hash: "md5-linux-musl"
             flags: ""
-            compat: false
           - target: "linux-arm*-musl*" #musl-arm
             hash: "md5-linux-musl-arm"
             flags: ""
-            compat: false
           - target: "windows-arm64" #win-arm64
             hash: "md5-windows-arm64"
             flags: ""
-            compat: false
           - target: "windows7-*" #win7
             hash: "md5-windows7"
             flags: "-tags=sqlite_cgo_compat -ldflags="
-            compat: true
           - target: "android-*" #android
             hash: "md5-android"
             flags: ""
-            compat: false
           - target: "freebsd-*" #freebsd
             hash: "md5-freebsd"
             flags: ""
-            compat: false
 
     name: Beta Release
     runs-on: ubuntu-latest
@@ -121,30 +112,10 @@ jobs:
         run: |
           echo "matrix.target=${{ matrix.target }}"
           echo "matrix.flags=${{ matrix.flags }}"
-          echo "matrix.compat=${{ matrix.compat }}"
           echo "resolved action flags=${{ matrix.flags || '-ldflags=' }}"
           echo "GOFLAGS=${GOFLAGS:-<empty>}"
 
-      - name: Build (Compat Targets)
-        if: matrix.compat == true
-        uses: OpenListTeam/cgo-actions@v1.2.2
-        with:
-          targets: ${{ matrix.target }}
-          flags: ${{ matrix.flags }}
-          musl-target-format: $os-$musl-$arch
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          out-dir: build
-          output: openlist-$target$ext
-          musl-base-url: "https://github.com/OpenListTeam/musl-compilers/releases/latest/download/"
-          x-flags: |
-            github.com/OpenListTeam/OpenList/v4/internal/conf.BuiltAt=$built_at
-            github.com/OpenListTeam/OpenList/v4/internal/conf.GitAuthor=The OpenList Projects Contributors <noreply@openlist.team>
-            github.com/OpenListTeam/OpenList/v4/internal/conf.GitCommit=$git_commit
-            github.com/OpenListTeam/OpenList/v4/internal/conf.Version=$tag
-            github.com/OpenListTeam/OpenList/v4/internal/conf.WebVersion=rolling
-
-      - name: Build (Default Targets)
-        if: matrix.compat != true
+      - name: Build
         uses: OpenListTeam/cgo-actions@v1.2.2
         with:
           targets: ${{ matrix.target }}
